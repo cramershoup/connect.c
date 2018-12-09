@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+# Script name
+SCRIPT_NAME=$(basename "${BASH_SOURCE[0]}")
+
+# Script directory
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") >/dev/null && pwd)
+
+# Project directory
+PROJECT_DIR=$(dirname "${SCRIPT_DIR}")
+
+read -d '' USAGE <<EOF
+Usage: ${SCRIPT_NAME} <ARCH>
+
+Arguments:
+    ARCH: x86, x64
+EOF
+
+function show_help
+{
+    echo "${USAGE}"
+    exit
+}
+
+# Architecture
+ARCH="$1"
+if [[ -z "${ARCH}" ]]; then
+    show_help
+fi
+
+# Dockerfile
+DOCKERFILE="linux-${ARCH}"
+
+# Build Docker image
+docker build -t "connect/build-${DOCKERFILE}" "${PROJECT_DIR}/docker/${DOCKERFILE}"
+
+# Run and build with Docker
+docker run -it --rm -v "${PROJECT_DIR}:/project" "connect/build-${DOCKERFILE}" /project/scripts/build-linux "${ARCH}"

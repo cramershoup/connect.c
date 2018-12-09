@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+# Script name
+SCRIPT_NAME=$(basename "${BASH_SOURCE[0]}")
+
+# Script directory
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") >/dev/null && pwd)
+
+# Project directory
+PROJECT_DIR=$(dirname "${SCRIPT_DIR}")
+
+# Saved directory
+SAVED_DIR=$(pwd)
+
+# Architecture
+case "$(uname -m)" in
+    x86_64*)    ARCH=x64;;
+    *)          ARCH=x86
+esac
+
+# CMAKE_OSX_ARCHITECTURES
+case "${ARCH}" in
+    x86) CMAKE_OSX_ARCHITECTURES="i386" ;;
+    x64) CMAKE_OSX_ARCHITECTURES="x86_64" ;;
+    *)   echo "Invalid architecture: ${ARCH}" && exit 1 ;;
+esac
+
+# Triplet
+TRIPLET="mac-${ARCH}"
+
+# Create build directories
+mkdir -p "${PROJECT_DIR}/build/${TRIPLET}"
+
+# Navigate to build directory
+cd "${PROJECT_DIR}/build/${TRIPLET}"
+
+# Generate CMake build system
+cmake "-DCMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}" ../..
+
+# Execute CMake build system
+cmake --build .
+
+# Restore directory
+cd "${SAVED_DIR}"
